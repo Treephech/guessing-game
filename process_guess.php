@@ -12,21 +12,33 @@ $target_number = $_SESSION['target_number'];
 $guesses = $_SESSION['guesses'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $guess = isset($_POST['guess']) ? (int)$_POST['guess'] : null;
-    $guesses++;
-
-    if ($guess === $target_number) {
-        $message = "Congratulations! $target_number is correct. You guessed the number in $guesses guesses.";
+    // Check if the user clicked the "Give up" button
+    if (isset($_POST['give_up'])) {
+        // Show the correct number and reset the game
+        $message = "The correct number was $target_number. Starting a new game.";
         session_unset(); // Unset all session variables
         session_destroy(); // Destroy the session
-    } elseif ($guess < $target_number) {
-        $message = "Too low! Try again.";
+        session_start();  // Start a new session
+        $_SESSION['target_number'] = rand(1, 100); // Generate a new random number
+        $_SESSION['guesses'] = 0;  // Reset the guess count
     } else {
-        $message = "Too high! Try again.";
-    }
+        // Handle a normal guess submission
+        $guess = isset($_POST['guess']) ? (int)$_POST['guess'] : null;
+        $guesses++;
 
-    // Update the session with the new number of guesses
-    $_SESSION['guesses'] = $guesses;
+        if ($guess === $target_number) {
+            $message = "Congratulations! $target_number is correct. You guessed the number in $guesses guesses.";
+            session_unset(); // Unset all session variables
+            session_destroy(); // Destroy the session
+        } elseif ($guess < $target_number) {
+            $message = "Too low! Try again.";
+        } else {
+            $message = "Too high! Try again.";
+        }
+
+        // Update the session with the new number of guesses
+        $_SESSION['guesses'] = $guesses;
+    }
 }
 
 // Return the message to be displayed
